@@ -1,6 +1,5 @@
 import expressAsyncHandler from "express-async-handler";
-// import bcrypt from "bcrypt";
-import { Jwt } from "jsonwebtoken";
+import jwt from "jsonwebtoken";
 import { Admin } from "../models/adminModel";
 import { Request, Response } from "express";
 
@@ -22,8 +21,8 @@ const getAdmins = expressAsyncHandler(async (req: Request, res: Response) => {
 // Add new admin entry
 const registerAdmin = expressAsyncHandler(
   async (req: Request, res: Response) => {
-    const { name, email, phonenumber, isEnable, role } = req.body;
-    if (!name || !email || !phonenumber || !isEnable || !role) {
+    const { name, email, phonenumber, password, isEnable, role } = req.body;
+    if (!name || !email || !phonenumber || !password || !isEnable || !role) {
       res.status(400);
       throw new Error(`All fields are mandatory.`);
     }
@@ -51,6 +50,7 @@ const registerAdmin = expressAsyncHandler(
       name,
       email,
       phonenumber,
+      password,
       isEnable,
       role,
     });
@@ -65,7 +65,7 @@ const registerAdmin = expressAsyncHandler(
 
 // Update the admin/employee
 const updateAdmin = expressAsyncHandler(async (req: Request, res: Response) => {
-  const { id, name, email, phonenumber, isEnable, role } = req.body;
+  const { id, name, email, phonenumber, password, isEnable, role } = req.body;
 
   if (!id) {
     res.status(400);
@@ -100,6 +100,7 @@ const updateAdmin = expressAsyncHandler(async (req: Request, res: Response) => {
       name,
       email,
       phonenumber,
+      password,
       isEnable,
       role,
     },
@@ -137,4 +138,31 @@ const deleteAdmin = expressAsyncHandler(async (req: Request, res: Response) => {
   }
 });
 
-export { getAdmins, registerAdmin, updateAdmin, deleteAdmin };
+// Login Admin
+const loginAdmin = expressAsyncHandler(async (req: Request, res: Response) => {
+  const { email, password } = req.body;
+  if (!email || !password) {
+    res.status(400);
+    throw new Error("All fields are mandatory!");
+  }
+  const user = await Admin.findOne({ email });
+  if (user?.password === password) {
+    const accessToken = jwt.sign(
+      {
+        user: {
+          userName: user?.name,
+          email: user?.email,
+          role: user?.role,
+        },
+      },
+      process.env.ACCESS_TOKEN_SECERT as string,
+      { expiresIn: "7d" }
+    );
+    res.status(200).json({ accessToken });
+  } else {
+    res.status(401);
+    throw new Error("email or password is not valid");
+  }
+});
+
+export { getAdmins, registerAdmin, updateAdmin, deleteAdmin, loginAdmin };

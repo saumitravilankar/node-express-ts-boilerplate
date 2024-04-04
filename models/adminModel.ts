@@ -2,6 +2,7 @@ import mongoose, { Document, Schema } from "mongoose";
 
 enum Role {
   ADMIN = "ADMIN",
+  DOCTOR = "DOCTOR",
   EMPLOYEE = "EMPLOYEE",
 }
 
@@ -9,6 +10,7 @@ interface Admin extends Document {
   name: string;
   email: string;
   phonenumber: string;
+  password: string;
   isEnable: boolean;
   role: Role;
   createdAt: Date;
@@ -25,6 +27,10 @@ const AdminSchema: Schema<Admin> = new Schema<Admin>(
       type: String,
       unique: true,
       required: [true, `Please add email of admin`],
+    },
+    password: {
+      type: String,
+      required: [true, `Please add password`],
     },
     phonenumber: {
       type: String,
