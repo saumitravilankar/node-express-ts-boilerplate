@@ -10,14 +10,14 @@ import { validateToken } from "../middleware/validateTokenHandler";
 
 const router = express.Router();
 
-// To apply to all 
-router.all("/login",validateToken)
+// To apply to all
+// router.all("/",validateToken)
 router
   .route("/")
   .get(getAdmins)
-  .post(registerAdmin)
-  .put(updateAdmin);
+  .post(validateToken, registerAdmin)
+  .put(validateToken, updateAdmin);
 router.route("/login").post(loginAdmin);
-router.route("/:id").delete(deleteAdmin);
+router.route("/:id").delete(validateToken, deleteAdmin);
 
 module.exports = router;
